@@ -1,5 +1,6 @@
-/** route:  src/components/customer/ScheduleDialog.jsx*/
+/** route: src/components/customer/ScheduleDialog.jsx */
 "use client";
+
 import { useState } from "react";
 import {
   Dialog,
@@ -9,7 +10,6 @@ import {
   Button,
   TextField,
   Alert,
-  AlertTitle,
   Box,
   Typography,
   MenuItem,
@@ -39,10 +39,10 @@ export default function ScheduleDialog({
   loading,
   setLoading,
 }) {
-  // Check if there's already a scheduled pickup
   const hasExistingSchedule = quote?.pickupDetails?.scheduledDate;
-  const isRescheduling = hasExistingSchedule && quote?.status === "pickup_scheduled";
-  
+  const isRescheduling =
+    hasExistingSchedule && quote?.status === "pickup_scheduled";
+
   const [formData, setFormData] = useState({
     scheduledDate: "",
     pickupWindow: "",
@@ -55,28 +55,25 @@ export default function ScheduleDialog({
     state: "",
     zipCode: "",
   });
-  
+
   const [error, setError] = useState("");
   const [addressVerifying, setAddressVerifying] = useState(false);
   const [addressVerified, setAddressVerified] = useState(false);
   const [zipLoading, setZipLoading] = useState(false);
 
-  // Update state field
   const handleInputChange = async (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (error) setError("");
-    // Reset address verification when address changes
+
     if (["street", "city", "state", "zipCode"].includes(field)) {
       setAddressVerified(false);
     }
-    
-    // Auto-populate city and state from ZIP code
+
     if (field === "zipCode" && value.length === 5) {
       await fetchCityStateFromZip(value);
     }
   };
 
-  // Fetch city and state from ZIP code
   const fetchCityStateFromZip = async (zipCode) => {
     setZipLoading(true);
     try {
@@ -90,15 +87,18 @@ export default function ScheduleDialog({
       }
     } catch (err) {
       console.error("Failed to fetch city/state from ZIP code:", err);
-      // Don't show error to user, just let them proceed
     } finally {
       setZipLoading(false);
     }
   };
 
-  // Address verification function
   const verifyAddress = async () => {
-    if (!formData.street || !formData.city || !formData.state || !formData.zipCode) {
+    if (
+      !formData.street ||
+      !formData.city ||
+      !formData.state ||
+      !formData.zipCode
+    ) {
       setError("Please enter a complete address (Street, City, State, ZIP)");
       return;
     }
@@ -114,13 +114,14 @@ export default function ScheduleDialog({
 
       if (response.data.verified) {
         setAddressVerified(true);
-        // Optionally update with normalized address components
         if (response.data.normalizedAddress) {
           // Parse normalized address if needed
-          // For now, we'll just mark it as verified
         }
       } else {
-        setError(response.data.error || "Address could not be verified. Please check and try again.");
+        setError(
+          response.data.error ||
+            "Address could not be verified. Please check and try again."
+        );
         setAddressVerified(false);
       }
     } catch (err) {
@@ -131,7 +132,6 @@ export default function ScheduleDialog({
     }
   };
 
-  // Form validation
   const validateForm = () => {
     if (!formData.scheduledDate || !formData.pickupWindow) {
       setError("Please select both a pickup date and time window.");
@@ -145,7 +145,12 @@ export default function ScheduleDialog({
       setError("Please enter a valid phone number.");
       return false;
     }
-    if (!formData.street || !formData.city || !formData.state || !formData.zipCode) {
+    if (
+      !formData.street ||
+      !formData.city ||
+      !formData.state ||
+      !formData.zipCode
+    ) {
       setError("Please enter a complete pickup address.");
       return false;
     }
@@ -153,7 +158,7 @@ export default function ScheduleDialog({
       setError("Please verify your pickup address before scheduling.");
       return false;
     }
-    // Date in the future
+
     const selectedDate = new Date(formData.scheduledDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -164,7 +169,6 @@ export default function ScheduleDialog({
     return true;
   };
 
-  // Form submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -186,19 +190,17 @@ export default function ScheduleDialog({
       });
 
       if (response.data.success) {
-        // Pass the updated quote data to parent component
         if (onActionComplete && response.data.quote) {
           onActionComplete(response.data.quote);
         }
-        
-        // Show success message based on whether it's a reschedule or new schedule
+
         if (response.data.isReschedule) {
           console.log("✅ Pickup rescheduled successfully");
         } else {
           console.log("✅ Pickup scheduled successfully");
         }
-        
-        onOpenChange(false); // close modal first
+
+        onOpenChange(false);
       } else {
         setError(response.data.error || "Failed to schedule pickup.");
       }
@@ -212,7 +214,6 @@ export default function ScheduleDialog({
     }
   };
 
-  // Define pickup time windows
   const pickupWindows = [
     {
       value: "morning",
@@ -228,7 +229,6 @@ export default function ScheduleDialog({
     },
   ];
 
-  // Date range: tomorrow to +30d
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const minDate = tomorrow.toISOString().split("T")[0];
@@ -265,7 +265,6 @@ export default function ScheduleDialog({
               </Alert>
             )}
 
-            {/* Date and Time Window on same line */}
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <Typography variant="body2" fontWeight={600} gutterBottom>
@@ -279,7 +278,9 @@ export default function ScheduleDialog({
                     max: maxDateString,
                   }}
                   value={formData.scheduledDate}
-                  onChange={(e) => handleInputChange("scheduledDate", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("scheduledDate", e.target.value)
+                  }
                   required
                 />
               </Grid>
@@ -292,7 +293,9 @@ export default function ScheduleDialog({
                   fullWidth
                   select
                   value={formData.pickupWindow}
-                  onChange={(e) => handleInputChange("pickupWindow", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("pickupWindow", e.target.value)
+                  }
                   placeholder="Select pickup window"
                   required
                 >
@@ -305,13 +308,16 @@ export default function ScheduleDialog({
               </Grid>
             </Grid>
 
-            {/* Pickup Location Section */}
             <Box>
-              <Typography variant="h6" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
+              <Typography
+                variant="h6"
+                fontWeight={600}
+                gutterBottom
+                sx={{ mb: 2 }}
+              >
                 Pickup location
               </Typography>
 
-              {/* Address Type */}
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
                   What type of address is this?
@@ -320,7 +326,9 @@ export default function ScheduleDialog({
                   <RadioGroup
                     row
                     value={formData.addressType}
-                    onChange={(e) => handleInputChange("addressType", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("addressType", e.target.value)
+                    }
                   >
                     <FormControlLabel
                       value="residence"
@@ -336,7 +344,6 @@ export default function ScheduleDialog({
                 </FormControl>
               </Box>
 
-              {/* Street Address */}
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" fontWeight={500} gutterBottom>
                   Street Address
@@ -357,7 +364,6 @@ export default function ScheduleDialog({
                 />
               </Box>
 
-              {/* City, State, ZIP */}
               <Grid container spacing={2} sx={{ mb: 2 }}>
                 <Grid item xs={12} sm={4}>
                   <Typography variant="body2" fontWeight={500} gutterBottom>
@@ -377,7 +383,9 @@ export default function ScheduleDialog({
                   <TextField
                     fullWidth
                     value={formData.state}
-                    onChange={(e) => handleInputChange("state", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("state", e.target.value)
+                    }
                     required
                   />
                 </Grid>
@@ -389,7 +397,9 @@ export default function ScheduleDialog({
                     fullWidth
                     placeholder="97205"
                     value={formData.zipCode}
-                    onChange={(e) => handleInputChange("zipCode", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("zipCode", e.target.value)
+                    }
                     required
                     InputProps={{
                       startAdornment: (
@@ -407,7 +417,6 @@ export default function ScheduleDialog({
                 </Grid>
               </Grid>
 
-              {/* Special Instructions */}
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" fontWeight={500} gutterBottom>
                   Instructions (optional)
@@ -418,24 +427,33 @@ export default function ScheduleDialog({
                   rows={3}
                   placeholder="Additional details to help us find your car, like a cross street, gate code, building number or apartment number."
                   value={formData.specialInstructions}
-                  onChange={(e) => handleInputChange("specialInstructions", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("specialInstructions", e.target.value)
+                  }
                   inputProps={{ maxLength: 500 }}
                 />
               </Box>
 
-              {/* Contact Name */}
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" fontWeight={500} gutterBottom>
                   Contact name
                 </Typography>
-                <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
-                  This is the primary name on your account and all future offers.
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  display="block"
+                  sx={{ mb: 1 }}
+                >
+                  This is the primary name on your account and all future
+                  offers.
                 </Typography>
                 <TextField
                   fullWidth
                   placeholder="Contact name"
                   value={formData.contactName}
-                  onChange={(e) => handleInputChange("contactName", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("contactName", e.target.value)
+                  }
                   required
                   InputProps={{
                     startAdornment: (
@@ -447,19 +465,26 @@ export default function ScheduleDialog({
                 />
               </Box>
 
-              {/* Contact Phone */}
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" fontWeight={500} gutterBottom>
                   Contact phone number
                 </Typography>
-                <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
-                  This phone number will be tied to your account and all future offers.
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  display="block"
+                  sx={{ mb: 1 }}
+                >
+                  This phone number will be tied to your account and all future
+                  offers.
                 </Typography>
                 <TextField
                   fullWidth
                   placeholder="1231231233"
                   value={formData.contactPhone}
-                  onChange={(e) => handleInputChange("contactPhone", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("contactPhone", e.target.value)
+                  }
                   required
                   inputProps={{ maxLength: 20 }}
                   InputProps={{
@@ -472,16 +497,13 @@ export default function ScheduleDialog({
                 />
               </Box>
 
-              {/* Verify Address Button */}
               <Button
                 fullWidth
                 variant={addressVerified ? "outlined" : "contained"}
                 color={addressVerified ? "success" : "primary"}
                 onClick={verifyAddress}
                 disabled={
-                  addressVerifying ||
-                  !formData.street ||
-                  !formData.zipCode
+                  addressVerifying || !formData.street || !formData.zipCode
                 }
                 sx={{ mt: 2 }}
                 startIcon={
@@ -497,8 +519,8 @@ export default function ScheduleDialog({
                 {addressVerifying
                   ? "Verifying..."
                   : addressVerified
-                  ? "Address Verified"
-                  : "Verify Address"}
+                    ? "Address Verified"
+                    : "Verify Address"}
               </Button>
               {addressVerified && (
                 <Typography
@@ -527,15 +549,17 @@ export default function ScheduleDialog({
           onClick={handleSubmit}
           disabled={loading}
           variant="contained"
-          startIcon={loading ? <CircularProgress size={16} /> : <CalendarIcon />}
+          startIcon={
+            loading ? <CircularProgress size={16} /> : <CalendarIcon />
+          }
         >
           {loading
             ? isRescheduling
               ? "Rescheduling..."
               : "Scheduling..."
             : isRescheduling
-            ? "Reschedule Pickup"
-            : "Schedule Pickup"}
+              ? "Reschedule Pickup"
+              : "Schedule Pickup"}
         </Button>
       </DialogActions>
     </Dialog>
